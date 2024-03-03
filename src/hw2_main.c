@@ -12,6 +12,7 @@
 int main(int argc, char **argv) {
     extern char *optarg;
     extern int optind;
+    extern int optopt;
     int currentCase;
     int err = 0;
     int iflag = 0; // 1 mandatory
@@ -24,88 +25,124 @@ int main(int argc, char **argv) {
     char *coptions;
     char *poptions;
     char *roptions;
-    static char usage[] = "usage: -i ipath -o opath [-c coptions] [-p poptions] [-r roptions]\n";
 
-    while ((currentCase = getopt(argc, argv, "i:o:c:p:r:")) != -1) {
+    while ((currentCase = getopt(argc, argv, "i:o:c:p:r:")) != -1 && err != MISSING_ARGUMENT) {
         switch (currentCase) { // check what current arg is
             case 'i':
                 iflag++;
                 ipath = optarg;
+                if (*ipath == '-') {
+                    err = MISSING_ARGUMENT;
+                }
                 break;
             case 'o':
                 oflag++;
                 opath = optarg;
+                if (*opath == '-') {
+                    err = MISSING_ARGUMENT;
+                }
                 break;
             case 'c':
                 cflag++;
                 coptions = optarg;
                 if (*coptions == '-') {
-                    printf("Mising C Arguments");
-                    return MISSING_ARGUMENT;
+                    err = MISSING_ARGUMENT;
                 }
                 break;
             case 'p':
                 pflag++;
                 poptions = optarg;
                 if (*poptions == '-') {
-                    printf("Mising P Arguments");
-                    return MISSING_ARGUMENT;
+                    err = MISSING_ARGUMENT;
                 }
                 break;
             case 'r':
                 rflag++;
                 roptions = optarg;
-                if (*roptions == '-') {
-                    printf("Missing R Arguments");
-                    return MISSING_ARGUMENT;
-                }
                 break;
             case '?':
-                err = 1;
+                if (optopt == 'r') {
+                    err = MISSING_ARGUMENT;
+                }
+                else {
+                    err = UNRECOGNIZED_ARGUMENT;
+                }
                 break;
         }
     }
 
-    // unsigned char coptionsarr[4];
-    // int i = 0;
-    // for (char *delimtest = strtok(coptions,","); delimtest != NULL; delimtest = strtok(NULL, ","))
-    // {
-    //     coptionsarr[i] = *delimtest;
-    //     i++;
-    // }
-    // printf("%d\n",coptionsarr[0]);
-
-
-    // for (int i = 0; i < 4; i++) {
-    //     printf("%d ", *coptions);
-    //     coptions++;
-    // }
-    // coptions = coptions-4;
-    // printf("%d ", *coptions);
-
-    if (iflag == 0 || oflag == 0 ){ // i and o are mandatory
+    if (iflag == 0 || oflag == 0 || err == MISSING_ARGUMENT){ // i and o are mandatory
         return MISSING_ARGUMENT;
     }
-    if (err == 1) {
+    if (err == UNRECOGNIZED_ARGUMENT) {
         return UNRECOGNIZED_ARGUMENT;
     }
     if (iflag > 1 || oflag > 1 || cflag > 1 || pflag > 1 || rflag > 1) {
         return DUPLICATE_ARGUMENT;
     }
+
+    FILE *inputfile;
+    inputfile = fopen(ipath, "r");
+    if (inputfile == NULL) {
+        return INPUT_FILE_MISSING;
+    }
+    fclose(inputfile);
+
+    FILE *outputfile;
+    outputfile = fopen(opath, "w");
+    if (outputfile == NULL) {
+        return OUTPUT_FILE_UNWRITABLE;
+    }
+    fclose(outputfile);
+
     if (pflag == 1 && cflag == 0) {
         return C_ARGUMENT_MISSING;
     }
-    
 
-
-
-
-
-
-
-    if (pflag || cflag || rflag || ipath || opath || coptions || poptions || roptions) {
-        printf("%s", usage);
-        return 0;
+    if (cflag == 1) {
+        char *coptionsptr = strtok(coptions, ",");
+        int i = 0;
+        while (coptionsptr != NULL) {
+            coptionsptr = strtok(NULL, ",");
+            i++;
+        }
+        if (i != 4) {
+            return C_ARGUMENT_INVALID;
+        }
     }
+
+    if (pflag == 1) {
+        char *poptionsptr = strtok(poptions, ",");
+        int i = 0;
+        while (poptionsptr != NULL) {
+            poptionsptr = strtok(NULL, ",");
+            i++;
+        }
+        if (i != 2) {
+            return P_ARGUMENT_INVALID;
+        }
+    }
+
+    if (rflag == 1) {
+        char *roptionsptr = strtok(roptions, ",");
+        int i = 1;
+        FILE *fontfile;
+        roptionsptr = strtok(NULL, ",");
+        printf("%s\n",roptionsptr);
+        fontfile = fopen(roptionsptr, "r");
+        while (roptionsptr != NULL) {
+            roptionsptr = strtok(NULL, ",");
+            i++;
+        }
+        if (i != 5) {
+            return R_ARGUMENT_INVALID;
+        }
+        if (fontfile == NULL) {
+            return R_ARGUMENT_INVALID;
+        }
+        fclose(fontfile);
+    }
+
+    return 0;
 
 }
