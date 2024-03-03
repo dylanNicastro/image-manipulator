@@ -99,41 +99,75 @@ int main(int argc, char **argv) {
         return C_ARGUMENT_MISSING;
     }
 
+    int crow = 0;
+    int ccol = 0;
+    int cwide = 0;
+    int chigh = 0;
     if (cflag == 1) {
-        char *coptionsptr = strtok(coptions, ",");
+        char* temp = calloc(strlen(coptions)+1, sizeof(char));
+        strcpy(temp, coptions);
+        char *coptionsptr = strtok(temp, ",");
         int i = 0;
         while (coptionsptr != NULL) {
             coptionsptr = strtok(NULL, ",");
             i++;
         }
+        free(temp);
         if (i != 4) {
             return C_ARGUMENT_INVALID;
         }
-    }
 
+        char *newptr = strtok(coptions, ",");
+        crow = atoi(newptr);
+        newptr = strtok(NULL, ",");
+        ccol = atoi(newptr);
+        newptr = strtok(NULL, ",");
+        cwide = atoi(newptr);
+        newptr = strtok(NULL, ",");
+        chigh = atoi(newptr);
+    }
+    
+    int prow = 0;
+    int pcol = 0;
     if (pflag == 1) {
-        char *poptionsptr = strtok(poptions, ",");
+        char* temp = calloc(strlen(poptions)+1, sizeof(char));
+        strcpy(temp, poptions);
+        char *poptionsptr = strtok(temp, ",");
         int i = 0;
         while (poptionsptr != NULL) {
             poptionsptr = strtok(NULL, ",");
             i++;
         }
+        free(temp);
         if (i != 2) {
             return P_ARGUMENT_INVALID;
         }
+
+        char *newptr = strtok(poptions, ",");
+        prow = atoi(newptr);
+        newptr = strtok(NULL, ",");
+        pcol = atoi(newptr);
     }
 
+
+    char *rmessage = 0;
+    char *rpathtofont = 0;
+    int rfontsize = 0;
+    int rrow = 0;
+    int rcol = 0;
     if (rflag == 1) {
-        char *roptionsptr = strtok(roptions, ",");
+        char* temp = calloc(strlen(roptions)+1, sizeof(char));
+        strcpy(temp, roptions);
+        char *roptionsptr = strtok(temp, ",");
         int i = 1;
         FILE *fontfile;
         roptionsptr = strtok(NULL, ",");
-        printf("%s\n",roptionsptr);
         fontfile = fopen(roptionsptr, "r");
         while (roptionsptr != NULL) {
             roptionsptr = strtok(NULL, ",");
             i++;
         }
+        free(temp);
         if (i != 5) {
             return R_ARGUMENT_INVALID;
         }
@@ -141,8 +175,21 @@ int main(int argc, char **argv) {
             return R_ARGUMENT_INVALID;
         }
         fclose(fontfile);
+
+        char *newptr = strtok(roptions, ",");
+        rmessage = newptr;
+        newptr = strtok(NULL, ",");
+        rpathtofont = newptr;
+        newptr = strtok(NULL, ",");
+        rfontsize = atoi(newptr);
+        newptr = strtok(NULL, ",");
+        rrow = atoi(newptr);
+        newptr = strtok(NULL, ",");
+        rcol = atoi(newptr);
     }
 
+    // temporary to prevent errors
+    printf("%d %d %d %d %d %d %s %s %d %d %d\n",crow,ccol,cwide,chigh,prow,pcol,rmessage,rpathtofont,rfontsize,rrow,rcol);
     return 0;
 
 }
