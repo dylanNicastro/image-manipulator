@@ -13,9 +13,13 @@
 
 int filecols = 0;
 int filerows = 0;
+int colorcount = 0;
+int *colordata;
+int *sbudata;
 int **filedata;
 void load(char ipath[]) {
     char *dot = strrchr(ipath, '.');
+    // PPM FILE
     if (dot && !strcmp(dot, ".ppm")) {
         FILE *inputfile;
         inputfile = fopen(ipath, "r");
@@ -34,6 +38,35 @@ void load(char ipath[]) {
         for (i = 0; i < filerows; i++) {
             for (j = 0; j < filecols; j++) {
                 fscanf(inputfile,"%d ", &filedata[i][j]);
+            }
+        }
+        fclose(inputfile);
+    }
+    // SBU FILE
+    else if (dot && !strcmp(dot, ".sbu")) {
+        FILE *inputfile;
+        inputfile = fopen(ipath, "r");
+        fscanf(inputfile, "%*[^\n]\n");
+        fscanf(inputfile, "%d %d\n", &filecols, &filerows);
+        fscanf(inputfile, "%d ", &colorcount);
+        colordata = malloc(colorcount*3*sizeof(int));
+        for (int i = 0; i < colorcount*3; i++) {
+            fscanf(inputfile,"%d ",&colordata[i]);
+        }
+        fscanf(inputfile,"\n");
+        
+        sbudata = malloc(filerows*filecols*sizeof(int));
+        int i = 0;
+        int j = 0;
+        for (i = 0; i < filerows*filecols; i++) {
+            int n;
+            int r;
+            if (fscanf(inputfile,"%d ", &sbudata[i]) == 0) {
+                fscanf(inputfile,"*%d %d", &n, &r);
+                for (j = 0; j < n; j++) {
+                    sbudata[i+j] = r;
+                }
+                i = i + n - 1;
             }
         }
         fclose(inputfile);
@@ -64,8 +97,49 @@ void save(char opath[], int **imgdata) {
             free(filedata[i]);
         }
         fclose(outputfile);
+        free(filedata);
     }
-    free(filedata);
+    // SBU FILE
+    else if (dot && !strcmp(dot, ".sbu")) {
+        FILE *outputfile;
+        outputfile = fopen(opath, "w");
+
+
+        fprintf(outputfile,"SBU\n%d %d\n%d\n", filecols, filerows, colorcount);
+
+        int i;
+        for (i = 0; i < 3*colorcount; i++) {
+            fprintf(outputfile,"%d ", colordata[i]);
+        }
+        fprintf(outputfile,"\n");
+        free(colordata);
+
+
+        for (i = 0; i < filerows*filecols; i++) {
+            fprintf(outputfile,"%d ",sbudata[i]);
+        }
+        fprintf(outputfile,"\n");
+        int n;
+        for (i = 0; i < filerows*filecols; i++) {
+            n = 1;
+            int r = sbudata[i];
+            while (sbudata[i] == sbudata[i+1] && i < filerows*filecols-1) {
+                n++;
+                printf("N: %d R: %d I: %d\n", n, r, i);
+                i++;
+            }
+            if (n > 1) {
+                fprintf(outputfile,"*%d %d ",n,r);
+                n = 1;
+            }
+            else {
+                fprintf(outputfile,"%d ",sbudata[i]);
+            }
+        }
+
+        fclose(outputfile);
+        free(sbudata);
+    }
 }
 
 int main(int argc, char **argv) {
