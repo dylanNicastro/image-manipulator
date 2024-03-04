@@ -155,7 +155,48 @@ void convert(int convertfrom, int convertto) {
         free(sbudata);
     }
     else if (convertfrom == PPMTYPE && convertto == SBUTYPE) {
+        colordata = malloc(3*sizeof(int));
+        sbudata = malloc(filerows*filecols*sizeof(int));
 
+        // create color table
+        int tempcount = 0;
+        colorcount = 1;
+        colordata = malloc(colorcount*3*sizeof(int));
+        colordata[0] = filedata[0][0];
+        colordata[1] = filedata[0][1];
+        colordata[2] = filedata[0][2];
+        // printf("New color table index created!\nsbudata[0] == 0\n");
+        sbudata[0] = 0;
+        int j = 3;
+        for (int i = 0; i < filerows; i++) {
+            for (; j < filecols; j++) {
+                // printf("Checking filedata[%d][%d]\n",i,j);
+                // check if rgb exists in colordata
+                int checkrgbexists = 0;
+                for (tempcount = 0; tempcount < colorcount && checkrgbexists == 0; tempcount++) {
+                    // printf("sbudata[%d]: Does (colordata[%d]) %d %d %d == %d %d %d (filedata)?\n",i*(filecols/3)+(j/3),3*tempcount,colordata[3*tempcount],colordata[3*tempcount+1],colordata[3*tempcount+2],filedata[i][j],filedata[i][j+1],filedata[i][j+2]);
+                    if (colordata[3*tempcount] == filedata[i][j] && colordata[3*tempcount+1] == filedata[i][j+1] && colordata[3*tempcount+2] == filedata[i][j+2]) {
+                        checkrgbexists++;
+                        sbudata[i*(filecols/3)+(j/3)] = tempcount;
+                        // printf("sbudata[%d] == %d\n",i*(filecols/3)+(j/3), tempcount);
+                    }
+                }
+                if (checkrgbexists == 0) {
+                    colorcount++;
+                    colordata = realloc(colordata, colorcount*3*sizeof(int));
+                    // printf("New color table index created!\nsbudata[%d] == %d\n",i*(filecols/3)+(j/3), colorcount-1);
+                    colordata[3*(colorcount-1)] = filedata[i][j];
+                    colordata[3*(colorcount-1)+1] = filedata[i][j+1];
+                    colordata[3*(colorcount-1)+2] = filedata[i][j+2];
+                    sbudata[i*(filecols/3)+(j/3)] = colorcount-1;
+                }
+                j = j + 2;
+            }
+            j = 0;
+        }
+
+        filecols = filecols / 3;
+        free(filedata);
     }
 }
 
@@ -363,6 +404,11 @@ int main(int argc, char **argv) {
     if (inputfiletype == SBUTYPE && outputfiletype == PPMTYPE) {
         load(ipath);
         convert(SBUTYPE, PPMTYPE);
+        save(opath);
+    }
+    if (inputfiletype == PPMTYPE && outputfiletype == SBUTYPE) {
+        load(ipath);
+        convert(PPMTYPE, SBUTYPE);
         save(opath);
     }
 
