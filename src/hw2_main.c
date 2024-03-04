@@ -8,6 +8,64 @@
 #include <stdbool.h>
 #include <string.h>
 #include <unistd.h> 
+#define PPMTYPE 1
+#define SBUTYPE 2
+
+int filecols = 0;
+int filerows = 0;
+int **filedata;
+void load(char ipath[]) {
+    char *dot = strrchr(ipath, '.');
+    if (dot && !strcmp(dot, ".ppm")) {
+        FILE *inputfile;
+        inputfile = fopen(ipath, "r");
+        fscanf(inputfile, "%*[^\n]\n");
+        fscanf(inputfile, "%d %d\n", &filecols, &filerows);
+        fscanf(inputfile, "%*[^\n]\n");
+
+        filecols = filecols*3;
+
+        filedata = malloc(filerows*sizeof(int*));
+        for (int i = 0; i < filerows; i++) {
+            filedata[i] = malloc(filecols*sizeof(int));
+        }
+        int i = 0;
+        int j = 0;
+        for (i = 0; i < filerows; i++) {
+            for (j = 0; j < filecols; j++) {
+                fscanf(inputfile,"%d ", &filedata[i][j]);
+            }
+        }
+        fclose(inputfile);
+    }
+}
+
+
+void save(char opath[], int **imgdata) {
+    (void)opath;
+    (void)imgdata;
+    char *dot = strrchr(opath, '.');
+    if (dot && !strcmp(dot, ".ppm")) {
+        FILE *outputfile;
+        outputfile = fopen(opath, "w");
+
+        filecols = filecols/3;
+        fprintf(outputfile,"P3\n%d %d\n255\n", filecols, filerows);
+
+        int i = 0;
+        int j = 0;
+        for (i = 0; i < filerows; i++) {
+            for (j = 0; j < filecols; j++) {
+                fprintf(outputfile,"%d ",filedata[i][j]);
+            }
+        }
+        for (i = 0; i < filerows; i++) {
+            free(filedata[i]);
+        }
+        fclose(outputfile);
+    }
+    free(filedata);
+}
 
 int main(int argc, char **argv) {
     extern char *optarg;
@@ -104,7 +162,7 @@ int main(int argc, char **argv) {
     int cwide = 0;
     int chigh = 0;
     if (cflag == 1) {
-        char* temp = calloc(strlen(coptions)+1, sizeof(char));
+        char *temp = calloc(strlen(coptions)+1, sizeof(char));
         strcpy(temp, coptions);
         char *coptionsptr = strtok(temp, ",");
         int i = 0;
@@ -130,7 +188,7 @@ int main(int argc, char **argv) {
     int prow = 0;
     int pcol = 0;
     if (pflag == 1) {
-        char* temp = calloc(strlen(poptions)+1, sizeof(char));
+        char *temp = calloc(strlen(poptions)+1, sizeof(char));
         strcpy(temp, poptions);
         char *poptionsptr = strtok(temp, ",");
         int i = 0;
@@ -156,7 +214,7 @@ int main(int argc, char **argv) {
     int rrow = 0;
     int rcol = 0;
     if (rflag == 1) {
-        char* temp = calloc(strlen(roptions)+1, sizeof(char));
+        char *temp = calloc(strlen(roptions)+1, sizeof(char));
         strcpy(temp, roptions);
         char *roptionsptr = strtok(temp, ",");
         int i = 1;
@@ -188,8 +246,41 @@ int main(int argc, char **argv) {
         rcol = atoi(newptr);
     }
 
+    int inputfiletype = 0;
+    char *dot = strrchr(ipath, '.');
+    if (dot && !strcmp(dot, ".ppm")) {
+        inputfiletype = PPMTYPE;
+    }
+    else if (dot && !strcmp(dot, ".sbu")) {
+        inputfiletype = SBUTYPE;
+    }
+
+    int outputfiletype = 0;
+    dot = strrchr(opath, '.');
+    if (dot && !strcmp(dot, ".ppm")) {
+        outputfiletype = PPMTYPE;
+    }
+    else if (dot && !strcmp(dot, ".sbu")) {
+        outputfiletype = SBUTYPE;
+    }
+
+    if (inputfiletype == outputfiletype) {
+        load(ipath);
+        save(opath, filedata);
+    }
+
     // temporary to prevent errors
-    printf("%d %d %d %d %d %d %s %s %d %d %d\n",crow,ccol,cwide,chigh,prow,pcol,rmessage,rpathtofont,rfontsize,rrow,rcol);
+    (void)crow;
+    (void)ccol;
+    (void)cwide;
+    (void)chigh;
+    (void)prow;
+    (void)pcol;
+    (void)rmessage;
+    (void)rpathtofont;
+    (void)rfontsize;
+    (void)rrow;
+    (void)rcol;
     return 0;
 
 }
