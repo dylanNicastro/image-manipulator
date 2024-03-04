@@ -195,55 +195,83 @@ void convert(int convertfrom, int convertto) {
 }
 
 void copypaste(int crow, int ccol, int cwidth, int cheight, int prow, int pcol) {
-    int **copydata = malloc(filerows*sizeof(int*));
-    for (int i = 0; i < filerows; i++) {
-        copydata[i] = malloc(filecols*3*sizeof(int));
-        memcpy(copydata[i], filedata[i], filecols*3);
+    filecols = filecols/3;
+    // int ccurrentcol = ccol*3;
+    // int ccurrentrow = crow;
+    // int clastcol = (ccol+cwidth-1)*3;
+    // int clastrow = crow+cheight-1;
+
+    // if (clastcol > filecols-1) {
+    //     clastcol = filecols-1;
+    // }
+    // if (clastrow > filerows-1) {
+    //     clastrow = filerows-1;
+    // }
+
+    // int pcurrentcol = pcol*3;
+    // int pcurrentrow = prow;
+    // int plastcol = (pcol+cwidth-1)*3;
+    // int plastrow = prow+cheight-1;
+
+    // if (plastcol > filecols-1) {
+    //     plastcol = filecols-1;
+    // }
+    // if (plastrow > filerows-1) {
+    //     plastrow = filerows-1;
+    // }
+
+    int startcol = ccol;
+    int startrow = crow;
+    int endcol = ccol+cwidth-1;
+    int endrow = crow+cheight-1;
+    if(endcol >= filecols) {
+        endcol = filecols - 1;
+    }
+    if (endrow >= filerows) {
+        endrow = filerows - 1;
     }
 
-    int ccurrentcol = ccol;
-    int ccurrentrow = crow;
-    int clastcol = ccol+cwidth-1;
-    int clastrow = crow+cheight-1;
 
-    if (clastcol > filecols/3) {
-        clastcol = filecols/3-1;
+    //int intscopied = (endrow-startrow+1)*(endcol-startcol+1)*3;
+
+    int pasteendcol = pcol+cwidth-1;
+    int pasteendrow = prow+cheight-1;
+
+    if (pasteendcol-pcol > endcol-startcol) {
+        pasteendcol = pcol+(endcol-startcol)-1;
     }
-    if (clastrow > filerows) {
-        clastrow = filerows-1;
+    if (pasteendrow-prow > endrow-crow) {
+        pasteendrow = prow+(endrow-startrow);
     }
 
-    int pcurrentcol = pcol;
-    int pcurrentrow = prow;
-    int plastcol = pcol+cwidth-1;
-    int plastrow = prow+cheight-1;
+    int intspasted = (pasteendrow-prow+1)*(pasteendcol-pcol+1)*3;
+    //printf("%dx%d pixels\n",pasteendrow-prow+1,pasteendcol-pcol+1);
 
-    if (plastcol > filecols/3-1) {
-        plastcol = filecols/3-1;
-    }
-    if (plastrow > filerows-1) {
-        plastrow = filerows-1;
-    }
+    //printf("Copying range [%d][%d] to [%d][%d]\nTotal: %d integers (%d pixels)\n",startrow,startcol,endrow,endcol, intscopied, intscopied/3);
+    //printf("Pasting to range [%d][%d] to [%d][%d]\nTotal: %d integers (%d pixels)\n%d\n",prow,pcol,pasteendrow,pasteendcol,intspasted,intspasted/3,(pasteendcol-pcol+1));
     
-    printf("Last copy index: [%d][%d] | Last paste index [%d][%d]\n",clastrow,clastcol,plastrow,plastcol);
-    while (ccurrentrow <= clastrow && pcurrentrow <= plastrow) {
-        ccurrentcol = ccol;
-        pcurrentcol = pcol;
-        while(ccurrentcol <= clastcol && pcurrentcol <= plastcol) {
-            printf("Accessing copy current index: [%d][%d]  | Paste current index: [%d][%d]\n",ccurrentrow,(ccurrentcol+1)*3-3,pcurrentrow,(pcurrentcol+1)*3-3);
-            filedata[pcurrentrow][(pcurrentcol+1)*3-3] = copydata[ccurrentrow][(ccurrentcol+1)*3-3];
-            filedata[pcurrentrow][(pcurrentcol+1)*3-2] = copydata[ccurrentrow][(ccurrentcol+1)*3-2];
-            filedata[pcurrentrow][(pcurrentcol+1)*3-1] = copydata[ccurrentrow][(ccurrentcol+1)*3-1];
-            ccurrentcol++;
-            pcurrentcol++;
+    int allocsize = 0;
+    int *copydata = malloc(allocsize);
+    int k = 0;
+    while (k < intspasted) {
+        //printf("%d\n",k);
+        copydata = realloc(copydata, (k+1)*sizeof(int));
+        copydata[k] = k;
+        k++;
+    }
+    //printf("First pixel: %d %d %d\n",copydata[0],copydata[1],copydata[2]);
+    
+    //printf("Copying [%d][%d] to [%d][%d] | Pasting into [%d][%d] to [%d][%d]\n",crow,ccol,clastrow,clastcol,prow,pcol,plastrow,plastcol);
+    k = 0;
+    for (int i = 0; i < (pasteendrow-prow+1); i++) {
+        for (int j = 0; j < (pasteendcol-pcol+1); j++) {
+            //filedata[prow+i][pcol+j] = copydata[k];
+            //printf("filedata[%d][%d] given by copydata[%d] == %d\n",prow+i,pcol+j,k,filedata[prow+i][pcol+j]);
+            k++;
+
         }
-        ccurrentrow++;
-        pcurrentrow++;
     }
-    
-    for (int i = 0; i < filerows; i++) {
-            free(copydata[i]);
-    }
+    filecols = filecols*3;
     free(copydata);
 }
 
