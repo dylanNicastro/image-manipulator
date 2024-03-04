@@ -58,6 +58,7 @@ void save(char opath[], int **imgdata) {
             for (j = 0; j < filecols*3; j++) {
                 fprintf(outputfile,"%d ",filedata[i][j]);
             }
+            fprintf(outputfile,"\n");
         }
         for (i = 0; i < filerows; i++) {
             free(filedata[i]);
