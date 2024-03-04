@@ -74,9 +74,7 @@ void load(char ipath[]) {
 }
 
 
-void save(char opath[], int **imgdata) {
-    (void)opath;
-    (void)imgdata;
+void save(char opath[]) {
     char *dot = strrchr(opath, '.');
     if (dot && !strcmp(dot, ".ppm")) {
         FILE *outputfile;
@@ -133,6 +131,31 @@ void save(char opath[], int **imgdata) {
 
         fclose(outputfile);
         free(sbudata);
+    }
+}
+
+void convert(int convertfrom, int convertto) {
+    if (convertfrom == SBUTYPE && convertto == PPMTYPE) {
+        filecols = filecols * 3;
+        filedata = malloc(filerows*sizeof(int*));
+        for (int i = 0; i < filerows; i++) {
+            filedata[i] = malloc(filecols*sizeof(int));
+        }
+        int k = 0;
+        for (int i = 0; i < filerows; i++) {
+            for (int j = 0; j < filecols; j++) {
+                filedata[i][j] = colordata[3*sbudata[k]];
+                filedata[i][j+1] = colordata[3*sbudata[k]+1];
+                filedata[i][j+2] = colordata[3*sbudata[k]+2];
+                k++;
+                j = j + 2;
+            }
+        }
+        free(colordata);
+        free(sbudata);
+    }
+    else if (convertfrom == PPMTYPE && convertto == SBUTYPE) {
+
     }
 }
 
@@ -335,7 +358,12 @@ int main(int argc, char **argv) {
 
     if (inputfiletype == outputfiletype) {
         load(ipath);
-        save(opath, filedata);
+        save(opath);
+    }
+    if (inputfiletype == SBUTYPE && outputfiletype == PPMTYPE) {
+        load(ipath);
+        convert(SBUTYPE, PPMTYPE);
+        save(opath);
     }
 
     // temporary to prevent errors
