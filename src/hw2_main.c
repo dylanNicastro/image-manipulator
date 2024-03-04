@@ -55,7 +55,7 @@ void save(char opath[], int **imgdata) {
         int i = 0;
         int j = 0;
         for (i = 0; i < filerows; i++) {
-            for (j = 0; j < filecols; j++) {
+            for (j = 0; j < filecols*3; j++) {
                 fprintf(outputfile,"%d ",filedata[i][j]);
             }
         }
