@@ -114,18 +114,12 @@ void save(char opath[], int **imgdata) {
         fprintf(outputfile,"\n");
         free(colordata);
 
-
-        for (i = 0; i < filerows*filecols; i++) {
-            fprintf(outputfile,"%d ",sbudata[i]);
-        }
-        fprintf(outputfile,"\n");
         int n;
         for (i = 0; i < filerows*filecols; i++) {
             n = 1;
             int r = sbudata[i];
             while (sbudata[i] == sbudata[i+1] && i < filerows*filecols-1) {
                 n++;
-                printf("N: %d R: %d I: %d\n", n, r, i);
                 i++;
             }
             if (n > 1) {
