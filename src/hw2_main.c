@@ -226,20 +226,18 @@ void copypaste(int crow, int ccol, int cwidth, int cheight, int prow, int pcol) 
         }
     }
     // copydata array is now properly created, with indices 0 through (pixelstocopy*3 - 1)
-    //printf("copyendrow: %d\ncopyendcol: %d\n",copyendrow,copyendcol);
 
     // pcol is first column to be pasted into
     // prow is first row to be pasted into
     int pasteendcol = pcol+cwidth-1; // last column to be pasted into
     int pasteendrow = prow+cheight-1; // last row to be pasted into
-    //printf("pasteendrow: %d\npasteendcol: %d\n",pasteendrow,pasteendcol);
+
     if (pasteendcol > copyendcol-ccol+1) { // if the last column to be pasted into is greater than the amount of columns in the copy: (200-180)
         pasteendcol = pcol+copyendcol-ccol;
     }
     if (pasteendrow > copyendrow-crow+1) {
         pasteendrow = prow+copyendrow-crow;
     }
-    //printf("pasteendrow: %d\npasteendcol: %d\n",pasteendrow,pasteendcol);
 
     if (pasteendcol >= filecols) { // if last column is outside of image
         pasteendcol = filecols-1; // set last column to rightmost column of image
@@ -247,12 +245,8 @@ void copypaste(int crow, int ccol, int cwidth, int cheight, int prow, int pcol) 
     if (pasteendrow >= filerows) { // if last row is outside of image
         pasteendrow = filerows-1; // set last row to bottom row of image
     }
-    //printf("pasteendrow: %d\npasteendcol: %d\n",pasteendrow,pasteendcol);
-
-    //printf("Last pixel index: %d %d\n", pasteendrow,pasteendcol);
 
     int expectedintsperrow = (copyendcol-ccol+1)*3;
-    //printf("%d\n",expectedintsperrow);
 
     i = 0;
     for (currentrow = prow; currentrow <= pasteendrow; currentrow++) { // for each row, from the first row to be copied up to the last row to be copied:
@@ -260,20 +254,100 @@ void copypaste(int crow, int ccol, int cwidth, int cheight, int prow, int pcol) 
             filedata[currentrow][currentcol] = copydata[i];
             i++;
         }
-        //printf("%d < %d?\n",i,expectedintsperrow*(currentrow-prow+1));
         if (i < expectedintsperrow*(currentrow-prow+1)) {
             i = expectedintsperrow*(currentrow-prow+1);
         }
-        //printf("Expected filedata[%d][%d]: %d   -   Actual: %d\n",currentrow,currentcol,copydata[i-1],filedata[currentrow][currentcol]);
     }
-    //printf("%d\n",i);
-    
-
-
-
-
     filecols = filecols*3;
     free(copydata);
+}
+
+char ***fontarray;
+void writemsg(char message[], char pathtofont[], int fontsize, int startrow, int startcol) {
+    //testing: ./build/hw2_main -i tests/images/desert.ppm -o tests/actual_outputs/result.ppm -r "seawolves","tests/fonts/font1.txt",1,100,150
+    (void)message;
+    (void)pathtofont;
+    (void)fontsize;
+    (void)startrow;
+    (void)startcol;
+
+    // get length of message
+    int messagelen = strlen(message);
+    (void)messagelen;
+
+
+    // open font file
+    FILE *fontfile;
+    fontfile = fopen(pathtofont, "r");
+
+    // parse each row
+    char **linebyline = malloc(20*sizeof(char*));
+    char *temp = malloc(4096*sizeof(char));
+    int i = 0;
+    while(fgets(temp, 4096, fontfile) != NULL) { // store each line in font file
+        linebyline[i] = strdup(temp);
+        i++;
+    }
+    for (int j = 0; j < i; j++) { // for each line in font file:
+        printf("i: %d - %s\n",j,linebyline[j]);
+    }
+
+    // parse font
+    fontarray = malloc(26*sizeof(char**)); // 3D main array to hold 26 characters - fontarray[x][y][z] = x-th character, y-th row of character, z-th column of character
+
+
+
+
+    // when done with individual lines, free all allocated memory
+    for (int j = 0; j < i; j++) {
+        free(linebyline[j]);
+    }
+    free(linebyline);
+    free(temp);
+
+    // initialize width and height values that will change depending on letter
+    // int letterwidth;
+    // int letterheight;
+    // int currentrow = startrow;
+    // int currentcol = startcol;
+    // int stop = 0;
+    // for (int i = 0; i < messagelen && stop == 0; i++) { // for each character:
+    //     currentrow = startrow; // reset the "character writer" to the top row
+    //     char currentletter = toupper(message[i]); // current letter = current char in the message string, converted to uppercase if it isn't already
+
+    //     // steps:
+    //     // check if currentletter is space
+    //     // if so: increment currentcol by 5 (5 empty columns = space);
+    //     if (currentletter == ' ') {
+    //         currentcol = currentcol + 5; // 5 columns for a space
+    //     }
+
+    //     // if currentletter is not space: parse the font file to find the current letter (how ???? no clue)
+
+
+    //     // create an array with the current letter in it (don't forget to free array)
+    //     // resize letter based on fontsize
+    //     // check if letter overflows image boundaries (if it will, stop = 1 and don't do anything else)
+    //     // paste letter in correct spot on array
+    //     // skip 1 column of pixels for gap between letters unless it does not fit in the image
+    //     // increment currentrow and currentcol accordingly
+
+    //     else {
+            
+    //     }
+
+        
+
+    // }
+
+
+    // close font file at the end
+    fclose(fontfile);
+    free(fontarray);
+}
+
+void addchartoarray(char **letter) {
+    (void)letter;
 }
 
 int main(int argc, char **argv) {
@@ -486,6 +560,10 @@ int main(int argc, char **argv) {
         copypaste(crow,ccol,cwide,chigh,prow,pcol);
     }
 
+    if (rflag == 1) {
+        writemsg(rmessage,rpathtofont,rfontsize,rrow,rcol);
+    }
+
     // AFTER ALL OPERATIONS OUTPUT THE FILE
     if (outputfiletype == PPMTYPE) {
         save(opath);
@@ -508,5 +586,4 @@ int main(int argc, char **argv) {
     (void)rrow;
     (void)rcol;
     return 0;
-
 }
