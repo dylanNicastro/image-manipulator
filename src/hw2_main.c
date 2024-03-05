@@ -265,15 +265,12 @@ void copypaste(int crow, int ccol, int cwidth, int cheight, int prow, int pcol) 
 char ***fontarray;
 void writemsg(char message[], char pathtofont[], int fontsize, int startrow, int startcol) {
     //testing: ./build/hw2_main -i tests/images/desert.ppm -o tests/actual_outputs/result.ppm -r "seawolves","tests/fonts/font1.txt",1,100,150
-    (void)message;
-    (void)pathtofont;
     (void)fontsize;
     (void)startrow;
     (void)startcol;
 
     // get length of message
     int messagelen = strlen(message);
-    (void)messagelen;
 
 
     // open font file
@@ -283,23 +280,55 @@ void writemsg(char message[], char pathtofont[], int fontsize, int startrow, int
     // parse each row
     char **linebyline = malloc(20*sizeof(char*));
     char *temp = malloc(4096*sizeof(char));
-    int i = 0;
+    int rowcount = 0;
     while(fgets(temp, 4096, fontfile) != NULL) { // store each line in font file
-        linebyline[i] = strdup(temp);
-        i++;
-    }
-    for (int j = 0; j < i; j++) { // for each line in font file:
-        printf("i: %d - %s\n",j,linebyline[j]);
+        linebyline[rowcount] = strdup(temp);
+        rowcount++;
     }
 
-    // parse font
-    fontarray = malloc(26*sizeof(char**)); // 3D main array to hold 26 characters - fontarray[x][y][z] = x-th character, y-th row of character, z-th column of character
+    int spaceindexarray[26];
+    int spacecount = 0;
+    for (int i = 0; i < (int)strlen(linebyline[0]); i++) { // for each character in every line:
+        int check = 0;
+        for (int j = 0; j < rowcount; j++) { // check each row:
+            if (linebyline[j][i] != ' ') {
+                check = 1; // if the column has any spaces, do nothing
+            }
+        }
+        if (check == 0 && i != 0 && spaceindexarray[spacecount-1] != i-1) { // if all chars in the column are spaces
+            spaceindexarray[spacecount] = i; // save index of column
+            spacecount++;
+        }
+    }
+    //printf("%d\n",spacecount);
 
+    
+    // 3D main array to hold 26 characters - fontarray[x][y][z] = x-th character, y-th row of character, z-th column of character
+    fontarray = malloc(26*sizeof(char**));
+    for (int i = 0; i < 26; i++) { // for each letter:
+        fontarray[i] = malloc(rowcount*sizeof(char*)); // allocate space in the array for the amount of rows 
+    }
 
-
+    // save each letter into the array as asterisks
+    int coloffset = 0;
+    for (int i = 0; i < spacecount; i++) { // for each char:
+        if (i > 0) {
+            coloffset = spaceindexarray[i-1]+1;
+            //printf("coloffset: %d\nrowcount: %d\nspaceindexarray[%d] = %d\n",coloffset,rowcount,i,spaceindexarray[i]);
+        }
+        for (int currentrow = 0; currentrow < rowcount; currentrow++) { // for every row:
+            fontarray[i][currentrow] = malloc((spaceindexarray[i]-coloffset)*sizeof(char)); // allocate space in the row for the amount of columns
+            for (int currentcol = 0; currentcol < spaceindexarray[i]-coloffset; currentcol++) { // for each column from 0 to the first space:
+                fontarray[i][currentrow][currentcol] = linebyline[currentrow][currentcol+coloffset];
+                //printf("%c ",fontarray[0][currentrow][currentcol]);
+            }
+            //printf("\n");
+        }
+        //printf("\n\n");
+    }
 
     // when done with individual lines, free all allocated memory
-    for (int j = 0; j < i; j++) {
+    for (int j = 0; j < rowcount; j++) {
         free(linebyline[j]);
     }
     free(linebyline);
@@ -308,41 +337,48 @@ void writemsg(char message[], char pathtofont[], int fontsize, int startrow, int
     // initialize width and height values that will change depending on letter
     // int letterwidth;
     // int letterheight;
-    // int currentrow = startrow;
-    // int currentcol = startcol;
-    // int stop = 0;
-    // for (int i = 0; i < messagelen && stop == 0; i++) { // for each character:
-    //     currentrow = startrow; // reset the "character writer" to the top row
-    //     char currentletter = toupper(message[i]); // current letter = current char in the message string, converted to uppercase if it isn't already
+    int currentrow;
+    int currentcol = startcol;
+    int stop = 0;
+    for (int i = 0; i < messagelen && stop == 0; i++) { // for each character:
+        currentrow = startrow; // reset the "character writer" to the top row
+        (void)currentrow;
+        
+        char currentletter = toupper(message[i]); // current letter = current char in the message string, converted to uppercase if it isn't already
 
-    //     // steps:
-    //     // check if currentletter is space
-    //     // if so: increment currentcol by 5 (5 empty columns = space);
-    //     if (currentletter == ' ') {
-    //         currentcol = currentcol + 5; // 5 columns for a space
-    //     }
+        // steps:
+        // DONEcheck if currentletter is space
+        // DONEif so: increment currentcol by 5 (5 empty columns = space);
+        if (currentletter == ' ') {
+            currentcol = currentcol + 5; // 5 columns for a space
+        }
 
-    //     // if currentletter is not space: parse the font file to find the current letter (how ???? no clue)
+        // if currentletter is not space:
+        // DONEcreate an array of all the font letters (don't forget to free array)
+        // parse the fonts to find the current letter (ascii value)
+        // resize letter based on fontsize
+        // check if letter overflows image boundaries (if it will, stop = 1 and don't do anything else)
+        // paste letter in correct spot on array
+        // skip 1 column of pixels for gap between letters unless it does not fit in the image
+        // increment currentrow and currentcol accordingly
 
-
-    //     // create an array with the current letter in it (don't forget to free array)
-    //     // resize letter based on fontsize
-    //     // check if letter overflows image boundaries (if it will, stop = 1 and don't do anything else)
-    //     // paste letter in correct spot on array
-    //     // skip 1 column of pixels for gap between letters unless it does not fit in the image
-    //     // increment currentrow and currentcol accordingly
-
-    //     else {
+        else {
             
-    //     }
+        }
 
         
 
-    // }
+    }
 
 
     // close font file at the end
     fclose(fontfile);
+    for (int i = 0; i < 26; i++) {
+        for (int j = 0; j < rowcount; j++) {
+            free(fontarray[i][j]);
+        }
+        free(fontarray[i]);
+    }
     free(fontarray);
 }
 
