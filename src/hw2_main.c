@@ -196,56 +196,33 @@ void convert(int convertfrom, int convertto) {
 
 void copypaste(int crow, int ccol, int cwidth, int cheight, int prow, int pcol) {
     filecols = filecols/3;
-    // int ccurrentcol = ccol*3;
-    // int ccurrentrow = crow;
-    // int clastcol = (ccol+cwidth-1)*3;
-    // int clastrow = crow+cheight-1;
 
-    // if (clastcol > filecols-1) {
-    //     clastcol = filecols-1;
-    // }
-    // if (clastrow > filerows-1) {
-    //     clastrow = filerows-1;
-    // }
-
-    // int pcurrentcol = pcol*3;
-    // int pcurrentrow = prow;
-    // int plastcol = (pcol+cwidth-1)*3;
-    // int plastrow = prow+cheight-1;
-
-    // if (plastcol > filecols-1) {
-    //     plastcol = filecols-1;
-    // }
-    // if (plastrow > filerows-1) {
-    //     plastrow = filerows-1;
-    // }
-
-    int startcol = ccol;
-    int startrow = crow;
+    //int startcol = ccol;
+    //int startrow = crow;
     int endcol = ccol+cwidth-1;
     int endrow = crow+cheight-1;
-    if(endcol >= filecols) {
-        endcol = filecols - 1;
-    }
-    if (endrow >= filerows) {
-        endrow = filerows - 1;
-    }
 
 
     //int intscopied = (endrow-startrow+1)*(endcol-startcol+1)*3;
-
     int pasteendcol = pcol+cwidth-1;
     int pasteendrow = prow+cheight-1;
 
-    if (pasteendcol-pcol > endcol-startcol) {
-        pasteendcol = pcol+(endcol-startcol)-1;
-    }
-    if (pasteendrow-prow > endrow-crow) {
-        pasteendrow = prow+(endrow-startrow);
-    }
+    // if (pasteendcol-pcol > endcol-startcol) {
+    //     pasteendcol = pcol+(endcol-startcol)-1;
+    // }
+    // if (pasteendrow-prow > endrow-crow) {
+    //     pasteendrow = prow+(endrow-startrow);
+    // }
 
-    int intspasted = (pasteendrow-prow+1)*(pasteendcol-pcol+1)*3;
-    //printf("%dx%d pixels\n",pasteendrow-prow+1,pasteendcol-pcol+1);
+    //     if(pasteendcol >= filecols) {
+    //     pasteendcol = filecols - 1;
+    // }
+    // if (pasteendrow >= filerows) {
+    //     pasteendrow = filerows - 1;
+    // }
+
+    //int intspasted = (pasteendrow-prow+1)*(pasteendcol-pcol+1)*3;
+    //printf("%dx%d pixels = %d integers\n",pasteendrow-prow+1,pasteendcol-pcol+1, intspasted);
 
     //printf("Copying range [%d][%d] to [%d][%d]\nTotal: %d integers (%d pixels)\n",startrow,startcol,endrow,endcol, intscopied, intscopied/3);
     //printf("Pasting to range [%d][%d] to [%d][%d]\nTotal: %d integers (%d pixels)\n%d\n",prow,pcol,pasteendrow,pasteendcol,intspasted,intspasted/3,(pasteendcol-pcol+1));
@@ -253,24 +230,30 @@ void copypaste(int crow, int ccol, int cwidth, int cheight, int prow, int pcol) 
     int allocsize = 0;
     int *copydata = malloc(allocsize);
     int k = 0;
-    while (k < intspasted) {
-        //printf("%d\n",k);
-        copydata = realloc(copydata, (k+1)*sizeof(int));
-        copydata[k] = k;
-        k++;
+    for (int i = crow; i < (pasteendrow+1) && i < (endrow+1) && i < filerows; i++) {
+        for (int j = ccol; j < (pasteendcol+1) && j < (endcol+1) && j*3+2 < filecols*3; j++) {
+            copydata = realloc(copydata, (k+3)*sizeof(int));
+            copydata[k] = filedata[i][j*3];
+            copydata[k+1] = filedata[i][j*3+1];
+            copydata[k+2] = filedata[i][j*3+2];
+            k = k + 3;
+        }
+        //printf("Row %d complete\n",i);
     }
-    //printf("First pixel: %d %d %d\n",copydata[0],copydata[1],copydata[2]);
+    //printf("%d\n",k);
     
-    //printf("Copying [%d][%d] to [%d][%d] | Pasting into [%d][%d] to [%d][%d]\n",crow,ccol,clastrow,clastcol,prow,pcol,plastrow,plastcol);
+    //printf("Copying [%d][%d] to [%d][%d] | Pasting into [%d][%d] to [%d][%d]\n",crow,ccol,endrow,endcol,prow,pcol,pasteendrow,pasteendcol);
     k = 0;
-    for (int i = 0; i < (pasteendrow-prow+1); i++) {
-        for (int j = 0; j < (pasteendcol-pcol+1); j++) {
-            //filedata[prow+i][pcol+j] = copydata[k];
-            //printf("filedata[%d][%d] given by copydata[%d] == %d\n",prow+i,pcol+j,k,filedata[prow+i][pcol+j]);
-            k++;
-
+    for (int i = prow; i < (pasteendrow+1) && i < (endrow+1) && i < filerows; i++) {
+        for (int j = pcol; j < (pasteendcol+1) && j < (endcol+1) && j*3+2 < filecols*3; j++) {
+            // filedata[i][j*3] = copydata[k];
+            // filedata[i][j*3+1] = copydata[k+1];
+            // filedata[i][j*3+2] = copydata[k+2];
+            // printf("%d %d %d\n",copydata[k],copydata[k+1],copydata[k+2]);
+            k = k + 3;
         }
     }
+    //printf("%d - First few pixels: %d %d %d    %d %d %d    %d %d %d    %d %d %d\n",k,copydata[0],copydata[1],copydata[2],copydata[3],copydata[4],copydata[5],copydata[6],copydata[7],copydata[8],copydata[9],copydata[10],copydata[11]);
     filecols = filecols*3;
     free(copydata);
 }
