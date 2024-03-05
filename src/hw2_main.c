@@ -196,64 +196,82 @@ void convert(int convertfrom, int convertto) {
 
 void copypaste(int crow, int ccol, int cwidth, int cheight, int prow, int pcol) {
     filecols = filecols/3;
+    (void)prow;
+    (void)pcol;
+    // ccol is first column to be copied
+    // crow is first row to be copied
+    int copyendcol = ccol+cwidth-1; // last column to be copied
+    int copyendrow = crow+cheight-1; // last row to be copied
+    // cwidth is amount of columns to be copied
+    // cheight is amount of rows to be copied
 
-    //int startcol = ccol;
-    //int startrow = crow;
-    int endcol = ccol+cwidth-1;
-    int endrow = crow+cheight-1;
-
-
-    //int intscopied = (endrow-startrow+1)*(endcol-startcol+1)*3;
-    int pasteendcol = pcol+cwidth-1;
-    int pasteendrow = prow+cheight-1;
-
-    // if (pasteendcol-pcol > endcol-startcol) {
-    //     pasteendcol = pcol+(endcol-startcol)-1;
-    // }
-    // if (pasteendrow-prow > endrow-crow) {
-    //     pasteendrow = prow+(endrow-startrow);
-    // }
-
-    //     if(pasteendcol >= filecols) {
-    //     pasteendcol = filecols - 1;
-    // }
-    // if (pasteendrow >= filerows) {
-    //     pasteendrow = filerows - 1;
-    // }
-
-    //int intspasted = (pasteendrow-prow+1)*(pasteendcol-pcol+1)*3;
-    //printf("%dx%d pixels = %d integers\n",pasteendrow-prow+1,pasteendcol-pcol+1, intspasted);
-
-    //printf("Copying range [%d][%d] to [%d][%d]\nTotal: %d integers (%d pixels)\n",startrow,startcol,endrow,endcol, intscopied, intscopied/3);
-    //printf("Pasting to range [%d][%d] to [%d][%d]\nTotal: %d integers (%d pixels)\n%d\n",prow,pcol,pasteendrow,pasteendcol,intspasted,intspasted/3,(pasteendcol-pcol+1));
-    
-    int allocsize = 0;
-    int *copydata = malloc(allocsize);
-    int k = 0;
-    for (int i = crow; i < (pasteendrow+1) && i < (endrow+1) && i < filerows; i++) {
-        for (int j = ccol; j < (pasteendcol+1) && j < (endcol+1) && j*3+2 < filecols*3; j++) {
-            copydata = realloc(copydata, (k+3)*sizeof(int));
-            copydata[k] = filedata[i][j*3];
-            copydata[k+1] = filedata[i][j*3+1];
-            copydata[k+2] = filedata[i][j*3+2];
-            k = k + 3;
-        }
-        //printf("Row %d complete\n",i);
+    if (copyendcol >= filecols) { // if last column is outside of image
+        copyendcol = filecols - 1; // set last column to rightmost column of image
     }
-    //printf("%d\n",k);
+    if (copyendrow >= filerows) { // if last row is outside of image
+        copyendrow = filerows - 1; // set last row to bottom row of image
+    }
+
+    int pixelstocopy = cwidth*cheight; // width * height of copy rectangle
+
+    int *copydata = malloc(pixelstocopy*3*sizeof(int)); // allocate memory for amount of pixels * 3 (integers for each pixel)
     
-    //printf("Copying [%d][%d] to [%d][%d] | Pasting into [%d][%d] to [%d][%d]\n",crow,ccol,endrow,endcol,prow,pcol,pasteendrow,pasteendcol);
-    k = 0;
-    for (int i = prow; i < (pasteendrow+1) && i < (endrow+1) && i < filerows; i++) {
-        for (int j = pcol; j < (pasteendcol+1) && j < (endcol+1) && j*3+2 < filecols*3; j++) {
-            // filedata[i][j*3] = copydata[k];
-            // filedata[i][j*3+1] = copydata[k+1];
-            // filedata[i][j*3+2] = copydata[k+2];
-            // printf("%d %d %d\n",copydata[k],copydata[k+1],copydata[k+2]);
-            k = k + 3;
+    int currentrow;
+    int currentcol;
+    int i = 0;
+    for (currentrow = crow; currentrow <= copyendrow; currentrow++) { // for each row, from the first row to be copied up to the last row to be copied:
+        for (currentcol = ccol*3; currentcol <= copyendcol*3+2; currentcol++) { // for each column, starting from the first integer to be copied in the row to the last integer to be copied in the row:
+            copydata[i] = filedata[currentrow][currentcol];
+            i++;
         }
     }
-    //printf("%d - First few pixels: %d %d %d    %d %d %d    %d %d %d    %d %d %d\n",k,copydata[0],copydata[1],copydata[2],copydata[3],copydata[4],copydata[5],copydata[6],copydata[7],copydata[8],copydata[9],copydata[10],copydata[11]);
+    // copydata array is now properly created, with indices 0 through (pixelstocopy*3 - 1)
+    //printf("copyendrow: %d\ncopyendcol: %d\n",copyendrow,copyendcol);
+
+    // pcol is first column to be pasted into
+    // prow is first row to be pasted into
+    int pasteendcol = pcol+cwidth-1; // last column to be pasted into
+    int pasteendrow = prow+cheight-1; // last row to be pasted into
+    //printf("pasteendrow: %d\npasteendcol: %d\n",pasteendrow,pasteendcol);
+    if (pasteendcol > copyendcol-ccol+1) { // if the last column to be pasted into is greater than the amount of columns in the copy: (200-180)
+        pasteendcol = pcol+copyendcol-ccol;
+    }
+    if (pasteendrow > copyendrow-crow+1) {
+        pasteendrow = prow+copyendrow-crow;
+    }
+    //printf("pasteendrow: %d\npasteendcol: %d\n",pasteendrow,pasteendcol);
+
+    if (pasteendcol >= filecols) { // if last column is outside of image
+        pasteendcol = filecols-1; // set last column to rightmost column of image
+    }
+    if (pasteendrow >= filerows) { // if last row is outside of image
+        pasteendrow = filerows-1; // set last row to bottom row of image
+    }
+    //printf("pasteendrow: %d\npasteendcol: %d\n",pasteendrow,pasteendcol);
+
+    //printf("Last pixel index: %d %d\n", pasteendrow,pasteendcol);
+
+    int expectedintsperrow = (copyendcol-ccol+1)*3;
+    //printf("%d\n",expectedintsperrow);
+
+    i = 0;
+    for (currentrow = prow; currentrow <= pasteendrow; currentrow++) { // for each row, from the first row to be copied up to the last row to be copied:
+        for (currentcol = pcol*3; currentcol <= pasteendcol*3+2; currentcol++) { // for each column, starting from the first integer to be copied in the row to the last integer to be copied in the row:
+            filedata[currentrow][currentcol] = copydata[i];
+            i++;
+        }
+        //printf("%d < %d?\n",i,expectedintsperrow*(currentrow-prow+1));
+        if (i < expectedintsperrow*(currentrow-prow+1)) {
+            i = expectedintsperrow*(currentrow-prow+1);
+        }
+        //printf("Expected filedata[%d][%d]: %d   -   Actual: %d\n",currentrow,currentcol,copydata[i-1],filedata[currentrow][currentcol]);
+    }
+    //printf("%d\n",i);
+    
+
+
+
+
     filecols = filecols*3;
     free(copydata);
 }
