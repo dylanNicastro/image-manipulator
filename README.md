@@ -16,7 +16,7 @@ This executable works with images in PPM format, as well as a custom format call
 - [Specific Flags](#specific-flags)
 
 > [!TIP]
-> Sample fonts and images are available for use within the release `.zip`, as well as the base code!
+> Sample fonts and images are available for use within `tests.zip` in the releases section!
 
 ## PPM (P3) Format
 File extension: `.ppm`
