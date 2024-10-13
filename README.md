@@ -141,6 +141,9 @@ Example: `-i .\tests\images\desert.ppm`
 
 Example: `-i .\output.sbu`
 
+> [!TIP]
+> If the input and output filetypes differ, the program will automatically convert the image!
+
 ---
 
 ### `-c ROW,COL,WIDTH,HEIGHT`
