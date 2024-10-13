@@ -1,4 +1,4 @@
-#include "hw2.h"
+#include "definitions.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,7 +7,6 @@
 #include <ctype.h>
 #include <stdbool.h>
 #include <string.h>
-#include <unistd.h> 
 #define PPMTYPE 1
 #define SBUTYPE 2
 
