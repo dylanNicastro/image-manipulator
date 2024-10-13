@@ -118,7 +118,7 @@ Download `ImageManipulator.exe` from [here](https://github.com/dylanNicastro/ima
 .\ImageManipulator.exe -i PATH -o PATH [-c ARGS] [-p ARGS] [-r ARGS]
 ```
 
-> [!INFO]
+> [!NOTE]
 > - `-i` and `-o` are required flags, but `-c`, `-p`, and `-r` are optional flags.
 >
 > - `-p` can only be used if `-c` is also used.
