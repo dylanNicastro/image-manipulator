@@ -118,12 +118,12 @@ Download `ImageManipulator.exe` from [here](https://github.com/dylanNicastro/ima
 .\ImageManipulator.exe -i PATH -o PATH [-c ARGS] [-p ARGS] [-r ARGS]
 ```
 
-> [!WARNING]
+> [!INFO]
 > - `-i` and `-o` are required flags, but `-c`, `-p`, and `-r` are optional flags.
 >
 > - `-p` can only be used if `-c` is also used.
 >
-> - Flags cannot be used twice (e.g. the command below is invalid)
+> - Flags cannot be used more than once (e.g. the command below is invalid)
 > ```
 > .\ImageManipulator.exe -i PATH -i PATH -o PATH
 > ```
