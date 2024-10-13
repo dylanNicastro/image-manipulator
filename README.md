@@ -9,14 +9,95 @@ This executable works with images in PPM format, as well as a custom format call
 - Write text with different font options onto the image!
 
 ### Document Sections:
+#### [Using the Executable](#using-the-executable)
+- [Command-Line Syntax](#command-line-syntax)
+- [Specific Flags](#specific-flags)
+
+#### [File Formats](#file-formats)
 - [PPM File Format](#ppm-p3-format)
 - [SBU File Format](#sbu-format)
 - [Font File Format](#font-file-format)
-- [Using the Executable](#using-the-executable)
-- [Specific Flags](#specific-flags)
 
 > [!TIP]
 > Sample fonts and images are available for use within `tests.zip` in the releases section!
+
+# Using the Executable
+
+Download `ImageManipulator.exe` from [here](https://github.com/dylanNicastro/image-manipulator/releases/latest)
+
+> [!WARNING]
+> Image Manipulator gets input from command-line arguments, so you must launch it from a terminal, not by double-clicking.
+
+## Command-Line Syntax:
+```
+.\ImageManipulator.exe -i PATH -o PATH [-c ARGS] [-p ARGS] [-r ARGS]
+```
+
+> [!NOTE]
+> - `-i` and `-o` are required flags, but `-c`, `-p`, and `-r` are optional flags.
+>
+> - `-p` can only be used if `-c` is also used.
+>
+> - Flags cannot be used more than once (e.g. the command below is invalid)
+> ```
+> .\ImageManipulator.exe -i PATH -i PATH -o PATH
+> ```
+
+## Specific Flags:
+### `-i PATH`
+- `PATH`: Indicates the path to the PPM or SBU image to be taken as input
+
+Example: `-i .\tests\images\desert.ppm`
+
+---
+
+### `-o PATH`
+- `PATH`: Indicates the path where the resulting image should be saved
+
+Example: `-i .\output.sbu`
+
+> [!TIP]
+> If the input and output filetypes differ, the program will automatically convert the image!
+
+---
+
+### `-c ROW,COL,WIDTH,HEIGHT`
+- `ROW`: Indicates the row to start copying at (0 is the topmost row)
+- `COL`: Indicates the column to start copying at (0 is the leftmost column)
+- `WIDTH`: Indicates the amount of pixels in each row to copy (Starts at `COL` then goes to the right)
+- `HEIGHT`: Indicates the amount of pixels in each column to copy (Starts at `ROW` then goes down)
+
+Example: `-c 10,20,100,50`
+
+> [!CAUTION]
+> The four arguments to `-c` are all mandatory, and they must be separated by commas only, **not spaces!**
+
+---
+
+### `-p ROW,COL`
+- `ROW`: Indicates the row to start pasting at (will paste downwards from this row)
+- `COL`: Indicates the column to start pasting at (will paste to the right from this column)
+
+Example: `-p 50,40`
+
+> [!CAUTION]
+> The two arguments to `-p` are all mandatory, and they must be separated by commas only, **not spaces!**
+
+---
+
+### `-r MSG,PATH,SIZE,ROW,COL`
+- `MSG`: The message to be written on the image, given in double quotation marks
+- `PATH`: Indicates the path where the font file can be found, given in double quotation marks
+- `SIZE`: An integer that indicates the size multiplier of the text to be written (valid range is 1-10)
+- `ROW`: Indicates the row to start writing at (will write downwards from this row)
+- `COL`: Indicates the column to start writing at (will write to the right from this column)
+
+Example: `-r "Hello, World!",".\tests\fonts\font1.txt",1,50,50`
+
+> [!CAUTION]
+> The five arguments to `-r` are all mandatory, and they must be separated by commas only, **not spaces!**
+
+# File Formats
 
 ## PPM (P3) Format
 File extension: `.ppm`
@@ -105,79 +186,3 @@ When scaling the font size, each row and column are multiplied by the font size 
 
 > [!NOTE]
 > Font scaling is automatically handled by the program when you specify the font size in the `-r` flag arguments!
-
-# Using the Executable
-
-Download `ImageManipulator.exe` from [here](https://github.com/dylanNicastro/image-manipulator/releases/latest)
-
-> [!WARNING]
-> Image Manipulator gets input from command-line arguments, so you must launch it from a terminal, not by double-clicking.
-
-## Command-line Syntax:
-```
-.\ImageManipulator.exe -i PATH -o PATH [-c ARGS] [-p ARGS] [-r ARGS]
-```
-
-> [!NOTE]
-> - `-i` and `-o` are required flags, but `-c`, `-p`, and `-r` are optional flags.
->
-> - `-p` can only be used if `-c` is also used.
->
-> - Flags cannot be used more than once (e.g. the command below is invalid)
-> ```
-> .\ImageManipulator.exe -i PATH -i PATH -o PATH
-> ```
-
-## Specific Flags:
-### `-i PATH`
-- `PATH`: Indicates the path to the PPM or SBU image to be taken as input
-
-Example: `-i .\tests\images\desert.ppm`
-
----
-
-### `-o PATH`
-- `PATH`: Indicates the path where the resulting image should be saved
-
-Example: `-i .\output.sbu`
-
-> [!TIP]
-> If the input and output filetypes differ, the program will automatically convert the image!
-
----
-
-### `-c ROW,COL,WIDTH,HEIGHT`
-- `ROW`: Indicates the row to start copying at (0 is the topmost row)
-- `COL`: Indicates the column to start copying at (0 is the leftmost column)
-- `WIDTH`: Indicates the amount of pixels in each row to copy (Starts at `COL` then goes to the right)
-- `HEIGHT`: Indicates the amount of pixels in each column to copy (Starts at `ROW` then goes down)
-
-Example: `-c 10,20,100,50`
-
-> [!CAUTION]
-> The four arguments to `-c` are all mandatory, and they must be separated by commas only, **not spaces!**
-
----
-
-### `-p ROW,COL`
-- `ROW`: Indicates the row to start pasting at (will paste downwards from this row)
-- `COL`: Indicates the column to start pasting at (will paste to the right from this column)
-
-Example: `-p 50,40`
-
-> [!CAUTION]
-> The two arguments to `-p` are all mandatory, and they must be separated by commas only, **not spaces!**
-
----
-
-### `-r MSG,PATH,SIZE,ROW,COL`
-- `MSG`: The message to be written on the image, given in double quotation marks
-- `PATH`: Indicates the path where the font file can be found, given in double quotation marks
-- `SIZE`: An integer that indicates the size multiplier of the text to be written (valid range is 1-10)
-- `ROW`: Indicates the row to start writing at (will write downwards from this row)
-- `COL`: Indicates the column to start writing at (will write to the right from this column)
-
-Example: `-r "Hello, World!",".\tests\fonts\font1.txt",1,50,50`
-
-> [!CAUTION]
-> The five arguments to `-r` are all mandatory, and they must be separated by commas only, **not spaces!**
