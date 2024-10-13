@@ -1,4 +1,5 @@
-#include "definitions.h"
+#include "include/definitions.h"
+#include "getopt.h"
 
 #include <stdio.h>
 #include <stdlib.h>

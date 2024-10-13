@@ -7,3 +7,9 @@
 #define C_ARGUMENT_INVALID 7
 #define P_ARGUMENT_INVALID 8
 #define R_ARGUMENT_INVALID 9
+
+void load(char ipath[]);
+void save(char opath[]);
+void convert(int convertfrom, int convertto);
+void copypaste(int crow, int ccol, int cwidth, int cheight, int prow, int pcol);
+void writemsg(char message[], char pathtofont[], int fontsize, int startrow, int startcol);
